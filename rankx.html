@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RANKX कैसे काम करता है</title>
+<style>
+:root{--bg:#f6f4ee;--surf:#fff;--ink:#1d2433;--mute:#6b7384;--line:#d9d5c8;--gold:#e0a800;--gold-bg:#fff4cc;--grn:#1f8a5b;--grn-bg:#dcf3e8;--blu:#2b5fd9;--blu-bg:#e3ebff;--gry:#a6abb8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171f;--surf:#1d222d;--ink:#eceff6;--mute:#9aa2b4;--line:#323949;--gold:#f2c230;--gold-bg:#403513;--grn:#46c58c;--grn-bg:#15382b;--blu:#7a9dff;--blu-bg:#1c2a52;--gry:#6c7387}}
+:root[data-theme="dark"]{--bg:#14171f;--surf:#1d222d;--ink:#eceff6;--mute:#9aa2b4;--line:#323949;--gold:#f2c230;--gold-bg:#403513;--grn:#46c58c;--grn-bg:#15382b;--blu:#7a9dff;--blu-bg:#1c2a52;--gry:#6c7387}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Noto Sans Devanagari","Segoe UI",system-ui,sans-serif}
+.w{max-width:1040px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.6rem;margin:0 0 4px;line-height:1.25}
+.sub{color:var(--mute);margin:0 0 16px}
+.opts{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:14px;font-size:.9rem;color:var(--mute)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-left:6px}
+.seg button{border:0;background:var(--surf);color:var(--ink);padding:5px 12px;font:inherit;cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--bg)}
+.grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:14px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:14px}
+.card h2{font-size:1rem;margin:0 0 10px;color:var(--mute);font-weight:600}
+table{width:100%;border-collapse:collapse}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:.85rem;color:var(--mute);font-weight:600}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+tr.row{cursor:pointer;transition:background .3s}
+tr.cur{background:var(--gold-bg);outline:2px solid var(--gold);outline-offset:-2px}
+.rk{font-weight:700;color:var(--grn)}
+.rk.q{color:var(--gry);font-weight:400}
+.pop{animation:pop .5s}
+@keyframes pop{0%{transform:scale(2.2);opacity:0}100%{transform:scale(1);opacity:1}}
+.ctx{margin-top:10px;font-size:.9rem;color:var(--mute)}
+.chip{display:inline-block;background:var(--blu-bg);color:var(--blu);border-radius:20px;padding:2px 10px;font-size:.85rem;margin:2px 4px 2px 0}
+.chip.off{background:var(--bg);color:var(--gry);text-decoration:line-through}
+pre{margin:0 0 12px;padding:12px;background:var(--bg);border:1px solid var(--line);border-radius:8px;overflow-x:auto;font:14px/1.7 ui-monospace,Consolas,monospace;white-space:pre}
+.hl{background:var(--gold-bg);outline:1px solid var(--gold);border-radius:3px;padding:0 2px}
+.step{font-size:1.15rem;font-weight:700;margin:0 0 4px}
+.exp{margin:0 0 12px;min-height:5.2em}
+.pad{display:grid;gap:6px}
+.it{display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);flex-wrap:wrap}
+.it .nm{flex:1 1 90px;font-weight:600}
+.it .vl{min-width:70px;text-align:right;font-variant-numeric:tabular-nums}
+.it .tg{flex:1 1 120px;font-size:.82rem;color:var(--mute)}
+.it.me{border-color:var(--gold);background:var(--gold-bg)}
+.it.g{border-color:var(--grn);background:var(--grn-bg)}
+.it.g .tg{color:var(--grn)}
+.it.d{border-color:var(--gold)}
+.it.x{opacity:.55}
+.appear{animation:in .45s both}
+@keyframes in{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+.big{margin-top:10px;padding:10px 12px;border-radius:8px;background:var(--grn-bg);color:var(--grn);font-weight:700}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+.ctl button{border:1px solid var(--line);background:var(--surf);color:var(--ink);border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
+.ctl button.p{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.ctl button:focus-visible,.seg button:focus-visible{outline:2px solid var(--blu);outline-offset:2px}
+.dots{display:flex;gap:5px;margin-left:auto}
+.dots i{width:22px;height:5px;border-radius:3px;background:var(--line)}
+.dots i.on{background:var(--gold)}
+@media(prefers-reduced-motion:reduce){.appear,.pop{animation:none}}
+</style>
+</head>
+<body>
+<div class="w">
+<h1>RANKX कैसे काम करता है</h1>
+<p class="sub">Visual की हर row के लिए RANKX अंदर क्या करता है, एक-एक step में देखिए। बाईं तरफ किसी भी row पर क्लिक करके वहीं से शुरू करें।</p>
+<div class="opts">
+<span>Order <span class="seg" id="oSeg"></span></span>
+<span>Ties <span class="seg" id="tSeg"></span></span>
+</div>
+<div class="grid">
+<div class="card">
+<h2>Visual (Table)</h2>
+<table><thead><tr><th>Product</th><th style="text-align:right">Revenue</th><th style="text-align:right">Rank</th></tr></thead><tbody id="vis"></tbody></table>
+<div class="ctx" id="ctx"></div>
+</div>
+<div class="card">
+<h2>RANKX के अंदर</h2>
+<pre id="code"></pre>
+<p class="step" id="stt"></p>
+<p class="exp" id="exp"></p>
+<div class="pad" id="pad"></div>
+<div id="res"></div>
+<div class="ctl">
+<button id="bp">← पिछला</button>
+<button id="bn" class="p">अगला step</button>
+<button id="ba">▶ Auto play</button>
+<div class="dots" id="dots"></div>
+</div>
+</div>
+</div>
+</div>
+<script>
+const D=[["Laptop",50000],["Phone",80000],["Tablet",30000],["Watch",30000],["Headphones",20000],["Camera",65000]];
+let r=0,s=0,desc=true,skip=true,done={},timer=null;
+const $=id=>document.getElementById(id),f=n=>n.toLocaleString("en-IN");
+const NS=6;
+function calc(i){const cur=D[i][1],seen=new Set();let c=0;
+const fl=D.map(([n,v])=>{const g=desc?v>cur:v<cur;if(!g)return 0;if(skip){c++;return 1}if(seen.has(v))return 2;seen.add(v);c++;return 1});
+return{c,fl,rank:c+1}}
+function seg(el,list,val,cb){el.innerHTML="";list.forEach(([k,t])=>{const b=document.createElement("button");b.textContent=t;b.className=val===k?"on":"";b.onclick=()=>cb(k);el.appendChild(b)})}
+function opts(){
+seg($("oSeg"),[[true,"DESC (बड़ा = Rank 1)"],[false,"ASC"]],desc,v=>{desc=v;reset()});
+seg($("tSeg"),[[true,"Skip"],[false,"Dense"]],skip,v=>{skip=v;reset()})}
+function reset(){done={};s=0;stop();render();opts()}
+function stop(){clearInterval(timer);timer=null;$("ba").textContent="▶ Auto play"}
+function code(){
+const h=(on,t)=>on?`<span class="hl">${t}</span>`:t;
+const o=desc?"DESC":"ASC",t=skip?"Skip":"Dense";
+$("code").innerHTML=`Rank =\nRANKX(\n  ${h(s==1,"ALL( Product[Name] )")},     <span style="color:var(--mute)">// table</span>\n  ${h(s==2||s==3,"[Revenue]")},                <span style="color:var(--mute)">// expression</span>\n  ,                           <span style="color:var(--mute)">// value (blank)</span>\n  ${h(s==4,o+", "+t)}\n)`}
+function render(){
+const c=calc(r),cur=D[r];
+$("vis").innerHTML=D.map(([n,v],i)=>{
+const show=done[i]||(i==r&&s==5);
+const rk=show?`<span class="rk ${i==r&&s==5?"pop":""}">${calc(i).rank}</span>`:`<span class="rk q">?</span>`;
+return `<tr class="row ${i==r?"cur":""}" data-i="${i}"><td>${n}</td><td class="n">${f(v)}</td><td class="n">${rk}</td></tr>`}).join("");
+document.querySelectorAll("tr.row").forEach(tr=>tr.onclick=()=>{r=+tr.dataset.i;s=0;stop();render()});
+$("ctx").innerHTML=`<b>Filter context इस cell का:</b><br>`+(s>=1&&s<=4?`<span class="chip off">Product = ${cur[0]}</span><span class="chip">ALL() ने हटा दिया</span>`:`<span class="chip">Product = ${cur[0]}</span>`);
+code();
+const T=[
+["Step 1: Visual की row evaluate हो रही है",`Visual में <b>${cur[0]}</b> वाली row के लिए measure चल रहा है। इस cell का filter context है <b>Product = ${cur[0]}</b>। RANKX को यही बताना है कि ${cur[0]} कौन-से नंबर पर है।`],
+["Step 2: ALL() से पूरी table बनी",`RANKX का पहला argument table है। <b>ALL(Product[Name])</b> ने Product का filter हटा दिया, इसलिए अब सारे products उपलब्ध हैं। यही वो list है जिसमें हम ${cur[0]} को बाकी सबसे compare करेंगे।`],
+["Step 3: हर product के लिए expression चला",`RANKX इस table पर iterate करता है। हर product पर एक row context बनता है और <b>[Revenue]</b> measure होने की वजह से context transition होता है, यानी row context filter context बन जाता है। इस तरह हर product का अपना Revenue निकलता है।`],
+["Step 4: ${cur[0]} की अपनी value निकाली",`Third argument (value) खाली है, इसलिए RANKX <b>original context</b> में [Revenue] निकालता है, यानी ${cur[0]} का <b>${f(cur[1])}</b>। अब इसी नंबर को list की बाकी values से compare करना है।`],
+[`Step 5: कितने products आगे हैं, गिनो`,`${desc?"DESC में बड़ी value आगे मानी जाती है":"ASC में छोटी value आगे मानी जाती है"}। ${cur[0]} (${f(cur[1])}) से <b>${desc?"ज़्यादा":"कम"}</b> value वाले products गिनो।${skip?"":" Dense में same value सिर्फ एक बार गिनी जाती है।"}`],
+["Step 6: Rank = गिनती + 1",`${c.c} products आगे हैं, इसलिए Rank = ${c.c} + 1 = <b>${c.rank}</b>। यह नंबर visual के उसी cell में आ गया और अब RANKX अगली row के लिए यही पूरा process दोहराएगा।`]];
+$("stt").textContent=T[s][0].replace("${cur[0]}",cur[0]);
+$("exp").innerHTML=T[s][1];
+let pad="";
+if(s>=1){pad=D.map(([n,v],j)=>{
+let cls="it",val="",tag="",st="";
+if(s==1)st="appear";
+if(s>=2){val=f(v);}
+let d=s==2?` style="animation-delay:${j*.5}s"`:s==4?` style="animation-delay:${j*.5}s"`:"";
+if(s==2){tag=`${n} → CALCULATE([Revenue])`;}
+if(s==3&&j==r){cls+=" me";tag="◀ यही हमारी value";}
+if(s>=4){const fg=c.fl[j];
+if(j==r){cls+=" me";tag="◀ हमारा product";}
+else if(fg==1){cls+=" g";tag=`${f(v)} ${desc?">":"<"} ${f(cur[1])} ✓ गिना`;}
+else if(fg==2){cls+=" d";tag="Duplicate value, दोबारा नहीं गिना";}
+else{cls+=" x";tag=`${f(v)} ${desc?"≤":"≥"} ${f(cur[1])} ✗`;}
+if(s==5&&fg!=1)cls+="";}
+const anim=(s==1||s==2||s==4)?" appear":"";
+return `<div class="${cls}${anim}"${d}><span class="nm">${n}</span><span class="vl">${val}</span><span class="tg">${tag}</span></div>`}).join("")}
+$("pad").innerHTML=pad;
+$("res").innerHTML=s==4?`<div class="big appear" style="animation-delay:${D.length*.5}s">Count = ${c.c}</div>`:s==5?`<div class="big">Rank = ${c.c} + 1 = ${c.rank}</div>`:"";
+$("dots").innerHTML=Array.from({length:NS},(_,i)=>`<i class="${i<=s?"on":""}"></i>`).join("");
+$("bp").disabled=(r==0&&s==0);
+const last=r==D.length-1&&s==NS-1;
+$("bn").textContent=s==NS-1?(last?"फिर से शुरू":"अगली row →"):"अगला step";
+}
+function next(){
+if(s<NS-1){s++;if(s==5)done[r]=true}
+else if(r<D.length-1){r++;s=0}
+else{r=0;s=0;done={};stop()}
+render()}
+function prev(){
+if(s>0){if(s==5)delete done[r];s--}
+else if(r>0){r--;s=NS-1}
+render()}
+$("bn").onclick=()=>{stop();next()};
+$("bp").onclick=()=>{stop();prev()};
+$("ba").onclick=()=>{
+if(timer){stop();return}
+$("ba").textContent="⏸ Pause";
+timer=setInterval(()=>{next()},s==2||s==4?3800:2600)};
+opts();render();
+</script>
+</body>
+</html>
